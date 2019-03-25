@@ -19,20 +19,6 @@ fn main() {
     /* Get program name used for error handling */
     let program = args[0].clone();
 
-    /* Argument check | will not suceed if too many/few arguments or invalid arguments */
-    // let arguments = arguments::Arguments::new(&args).unwrap_or_else(
-    //     |err| {
-    //         if err.contains("help") {
-    //             /* If arguments contained "help", stop the process */
-    //             process::exit(0);
-    //         } else {
-    //             /* Prints out the error message */
-    //             eprintln!("{} | Problem parsing arguments: {}", program, err);
-    //             process::exit(0);
-    //         }
-    //     }
-    // );
-
     let arguments = match arguments::Arguments::new(&args) {
         Ok(arguments) => arguments,
         Err(error) => {
