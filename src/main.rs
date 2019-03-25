@@ -1,45 +1,70 @@
+/* Module contains functions to read Environment Variables, Process Arguments, etc... */
 use std::env;
+/* Module for working with Processes */
 use std::process;
+/* Module for handling use of multiple threads */
 use std::thread;
+/* Module for handling asynchronous channels */
 use std::sync::mpsc::channel;
 
+/* Arguments module | ~./src/arguments/mod.rs */
 mod arguments;
+/* Scan Module | ~./src/scanner/mod.rs */
 pub mod scanner;
 
 fn main() {
-
+    /* Gets input from command line and collects them into a Vector */
     let args: Vec<String> = env::args().collect();
+
+    /* Get program name used for error handling */
     let program = args[0].clone();
+
+    /* Argument check | will not suceed if too many/few arguments or invalid arguments */
     let arguments = arguments::Arguments::new(&args).unwrap_or_else(
         |err| {
             if err.contains("help") {
+                /* If arguments contained "help", stop the process */
                 process::exit(0);
             } else {
+                /* Prints out the error message */
                 eprintln!("{} | Problem parsing arguments: {}", program, err);
                 process::exit(0);
             }
         }
     );
 
+    /* Declare Variables | # of threads, IP Address, and Sender/Receiver channels from the arguments given from the user */
     let num_threads = arguments.threads;
     let addr = arguments.ipaddr;
     let (tx, rx) = channel();
+
+    /* Spawns # of threads from the arguments given  */
     for i in 0..num_threads {
+        /* Copy Receiver */
         let tx = tx.clone();
 
+        /* Each thread will scan for ports and place them in collection */
         thread::spawn(move || {
             scanner::scan(tx, i, addr, num_threads);
         });
     }
 
+    /* Declare new empty vector */
     let mut out = vec![];
+
+    /* Drop Receiver */
     drop(tx);
+    /* Add open ports to vector */
     for p in rx {
         out.push(p);
     }
 
+    /* Print Empty line */
     println!("");
+    /* Sort vector */
     out.sort();
+
+    /* Print each port */
     for v in out {
         println!("{} is open", v);
     }
