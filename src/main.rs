@@ -20,18 +20,32 @@ fn main() {
     let program = args[0].clone();
 
     /* Argument check | will not suceed if too many/few arguments or invalid arguments */
-    let arguments = arguments::Arguments::new(&args).unwrap_or_else(
-        |err| {
-            if err.contains("help") {
-                /* If arguments contained "help", stop the process */
+    // let arguments = arguments::Arguments::new(&args).unwrap_or_else(
+    //     |err| {
+    //         if err.contains("help") {
+    //             /* If arguments contained "help", stop the process */
+    //             process::exit(0);
+    //         } else {
+    //             /* Prints out the error message */
+    //             eprintln!("{} | Problem parsing arguments: {}", program, err);
+    //             process::exit(0);
+    //         }
+    //     }
+    // );
+
+    let arguments = match arguments::Arguments::new(&args) {
+        Ok(arguments) => arguments,
+        Err(error) => {
+            if error.contains("help") {
+                /* If arguments contained "help", don't display error message */
                 process::exit(0);
             } else {
-                /* Prints out the error message */
-                eprintln!("{} | Problem parsing arguments: {}", program, err);
+                /* Print out the error message */
+                eprintln!("{} | Problem parsing arguments: {}", program, error);
                 process::exit(0);
             }
         }
-    );
+    };
 
     /* Declare Variables | # of threads, IP Address, and Sender/Receiver channels from the arguments given from the user */
     let num_threads = arguments.threads;
